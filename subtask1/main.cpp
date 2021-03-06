@@ -37,6 +37,10 @@ int main(int argc, char** argv){
     //convert to gray image
     Mat gimg;
     cvtColor(img, gimg, COLOR_BGR2GRAY);
+    bool check = imwrite("grey_empty.jpg",gimg);
+    if(check == false){
+        cout<<"Grey image is not saved"<<endl;
+    }
 
     //selected postion display size
     vector<Point2f> dst_pts;
@@ -81,6 +85,10 @@ int main(int argc, char** argv){
 
     //show reulting image
     imshow("Congo!!", final_img);
+    bool check1 = imwrite("final_cropped_projection.jpg", final_img);
+    if(check1 == false){
+        cout<<"Final image is not saved"<<endl;
+    }
     waitKey(0);
     printf("\nPress any key to exit\n");
 
