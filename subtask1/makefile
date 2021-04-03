@@ -1,11 +1,12 @@
-make: fun
+main : a.out
 	clear
-	./fun empty.jpg   	
-	
-fun:
-	g++ -o fun fun.cpp -std=c++11 `pkg-config --cflags --libs opencv`
+	@echo "type:$$./a.out <image_name>"
 
-clear:
-	rm fun
-	rm grey_empty.jpg
-	rm final_cropped_projection.jpg
+a.out : subtask.cpp
+	g++ main.cpp -std=c++11 `pkg-config --cflags --libs opencv`
+
+
+clean :
+	rm a.out
+	rm 'cropped.jpg'
+	rm 'projected.jpg'
