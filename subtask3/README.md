@@ -33,3 +33,7 @@ Parameter can be number of splits i.e. number of threads, if each thread gets on
 boundary pixels that different threads process for utility.
 **Method4**: split work temporally across threads (application level pthreads), by giving consecutive frames to different 
 threads for processing. Parameter can be number of threads.
+//---------------------------------------------------------------------------------//
+code folder contains our src codes, makefile, and readme to help build the executables.
+analysis folder contains some scripts for post-processing analysis.
+//---------------------------------------------------------------------------------//
