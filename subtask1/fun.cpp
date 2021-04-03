@@ -1,96 +1,112 @@
-#include <opencv2/highgui.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
+#include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include <iostream>
+#include <vector>
 
-using namespace std;
 using namespace cv;
+using namespace std;
 
-#define pb push_back
 
-vector<Point2f> src_pts;
-int n = 0;
+vector<Point2f> src_points; // Global Variable
 
-void mouse_callback(int  event, int  x, int  y, int  flag, void *param){
-    //consider only left clicks
-    if (event == EVENT_LBUTTONDOWN){      
-        printf("x = %d, y = %d\n", x, y);   //display point clicked
-        n++;                                //increase count of selected points            
-        src_pts.pb(Point2f(x, y));          //store point coordinates clicked
+void onMouseClick(int event, int x, int y, int flags, void* userdata)
+{
+    //capture points if left button pressed wiht control key pressed
+    if( event == EVENT_LBUTTONDOWN ){
+        src_points.push_back(Point2f(x,y));
+        cout<< "coordinate- ("<< x <<","<< y << ")"<< endl;
+    }
+    if(src_points.size() ==4){
+        destroyWindow("Win");
+        return;
     }
 }
 
 int main(int argc, char** argv){
     
+    if(argv[1]==NULL){
+        cout<<"enter the image to be processed"<<endl;
+        return 0;
+    }
     string img_path = argv[1];
-    Mat img = imread(img_path);
-    //Mat img = imread("empty.jpg");          //read image
+    string final_path = img_path + ".jpg";
     
-    //check validation of image
-    if(img.empty()){
-        cout<<"Image can't be loaded or not found\n";
-        cin.get();
+    //read the Image
+    Mat imsrc = imread(final_path);
+    
+    //check if the Image has loaded or not
+    if (imsrc.empty()){
+        cout<<"Image not loaded"<<endl;
         return -1;
     }
 
-    //convert to gray image
-    Mat gimg;
-    cvtColor(img, gimg, COLOR_BGR2GRAY);
-    bool check = imwrite("grey_empty.jpg",gimg);
-    if(check == false){
-        cout<<"Grey image is not saved"<<endl;
-    }
+    // converting the colored image to grayscale 
+    Mat gray_img;
+    cvtColor(imsrc,gray_img,COLOR_BGR2GRAY);
+    //resize(gray_img,gray_img,Size(gray_img.cols/3,gray_img.rows/3));
+    namedWindow("Win",0);
+    resizeWindow("Win",1000,1000);
+    imshow("Win", gray_img);
+    
+    
+    //projecting the grayscaled image to the required image 
+    
+    
+    //give the instructions to click the points
+    
+    cout<<"click 4 points on Win "<<endl;
+    cout<<"top-left"<<endl;
+    cout<<"bottom-left"<<endl;
+    cout<<"bottom-right"<<endl;
+    cout<<"top-right"<<endl;
+    
 
-    //selected postion display size
-    vector<Point2f> dst_pts;
-    Size s = {300, 500};
-    dst_pts.pb(Point2f(0,0));
-    dst_pts.pb(Point2f(s.width,0));
-    dst_pts.pb(Point2f(s.width,s.height));
-    dst_pts.pb(Point2f(0,s.height));
+    setMouseCallback("Win",onMouseClick,0);
 
-    while(true){
-        //create image window for selection
-        string win = "Select corners";
-        namedWindow(win, WINDOW_NORMAL);
-        imshow(win, gimg);
+    waitKey(0);
+    
+    vector<Point2f> dst_points;
+    dst_points.push_back(Point2f(472,52));
+    dst_points.push_back(Point2f(472,832));
+    dst_points.push_back(Point2f(800,830));
+    dst_points.push_back(Point2f(800,52));
+    
+    Mat homography = findHomography(src_points,dst_points);
+    Mat im_out;
 
-        printf("\nCheck points in cyclic order :)\n");          //user prompt            
-        setMouseCallback("Select corners", mouse_callback);     //callback to maouse 
-        
-        //loop running till 4 points are selected or window is quit('q')
-        for(;;){
-            if(n==4) break;
-            if((waitKey(1) & 0xFF) == 'q') break;
-        }
-        destroyWindow(win);                                     //remove selection window
-
-        //check valid selection
-        if(n<4){
-            printf("\nDon't quit before selected all points, select again\n\n");
-            //reinitiate selection data and parameters
-            src_pts = {};
-            n = 0;
-        }
-        //exit loop on valid selection
-        else{
-            break;
-        }
-    }
-
-    Mat H = getPerspectiveTransform(src_pts, dst_pts);          //get homography matrix for transformation
-    Mat final_img;                                              //initialize resulting image
-    warpPerspective(gimg, final_img, H, s);                     //setup resulting image
-
-    //show reulting image
-    imshow("Congo!!", final_img);
-    bool check1 = imwrite("final_cropped_projection.jpg", final_img);
+    warpPerspective(gray_img,im_out,homography,gray_img.size());
+    //resize(im_out,im_out,Size(im_out.cols/3,im_out.rows/3));
+    //show the image projected
+    namedWindow("projected image",0);
+    resizeWindow("projected image",1000,1000);
+    imshow("projected image",im_out);
+    //save the projected image
+    bool check1 = imwrite("projected.jpg",im_out);
     if(check1 == false){
-        cout<<"Final image is not saved"<<endl;
+        cout<<"Image could not be saved"<<endl;
     }
     waitKey(0);
-    printf("\nPress any key to exit\n");
+    destroyWindow("projected image");
 
+    //croping the image
+    int top_left_x = 472;
+    int top_left_y = 52;
+    int width = 800 - 472;
+    int height = 830 - 52;
+    Rect cropped_img(top_left_x,top_left_y,width,height);
+    Mat im_crop = im_out(cropped_img);
+    namedWindow("cropped image",0);
+    resizeWindow("cropped image",500,500);
+    //show the image cropped 
+    imshow("cropped image",im_crop);
+    bool check2 = imwrite("cropped.jpg",im_crop);
+    if(check2 == false){
+        cout<<"Image could not be saved"<<endl;
+    }
+    
+    waitKey(0);
+
+    destroyAllWindows();    
     return 0;
+
 }
