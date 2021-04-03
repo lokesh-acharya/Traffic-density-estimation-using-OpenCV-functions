@@ -2,7 +2,7 @@ main : a.out
 	clear
 	@echo "type:$$./a.out <image_name>"
 
-a.out : subtask.cpp
+a.out : main.cpp
 	g++ main.cpp -std=c++11 `pkg-config --cflags --libs opencv`
 
 
