@@ -22,7 +22,7 @@ absolute or squared value of that as error. The lower this error, the higher is 
 of that error over the whole video, to get a single value for utility. Similarly for runtime, you can take the time for 
 processing the whole video. You can have a plot, where x-axis is utility and y-axis is runtime, and different points in
 that plot will come from different methods/parameters.
-For this task's utility-runtime trade-off analysis, we can have the following methods/parameters
+For this task's utility-runtime trade-off analysis, we can have the following methods/parameters  
 **Method1**: sub-sampling frames -- processing every x frame i.e. process frame N and then frame N+x, and for all intermediate 
 frames just use the value obtained for N - total processing time will reduce, but utility might decrease as intermediate frames
 values might differ from baseline. Parameter for this method is x, how many frames you drop.
